@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>グラブル素材計算ツール 完成版</title>
+<title>グラブル素材計算ツール 完全版</title>
 
 <style>
 body { font-family: sans-serif; margin:0; background:#f5f6f8; }
-.header { position:sticky; top:0; background:#222; color:white; padding:10px; }
+.header { position:sticky; top:0; background:#222; color:white; padding:10px; z-index:10; }
 .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
 .card { background:white; margin:10px; border-radius:10px; overflow:hidden; }
-.cardHeader { background:#444; color:white; padding:8px; cursor:pointer; font-weight:bold; }
+.cardHeader { background:#444; color:white; padding:8px; cursor:pointer; font-weight:bold; user-select:none; }
 .cardBody { padding:10px; }
 
-.row { display:grid; grid-template-columns:60px 1fr 70px; gap:5px; margin-bottom:8px; align-items:center; }
+.row { display:grid; grid-template-columns:60px 1fr 80px; gap:5px; margin-bottom:8px; align-items:center; }
 .lack { color:red; font-weight:bold; }
 .barWrap { background:#ddd; border-radius:6px; margin-top:4px; }
 .bar { height:14px; color:white; font-size:10px; text-align:center; border-radius:6px; }
@@ -27,7 +27,7 @@ input { width:100%; }
 <body>
 
 <div class="header">
-  <div>グラブル素材計算ツール 完成版</div>
+  <div>グラブル素材計算ツール 完全版</div>
   <div class="controls">
     <select id="chara"></select>
     <label><input type="checkbox" id="allView"> 全キャラ表示</label>
@@ -63,52 +63,74 @@ const CHARAS = [
 {n:"エッセル",e:"火",w:"銃",no:10}
 ];
 
-// 光輪
-function getRings(e){
+// ===== 素材関数 =====
+const getRings = e=>{
   if(e==="光") return [{name:"火の光輪",need:40},{name:"風の光輪",need:40}];
   if(e==="闇") return [{name:"水の光輪",need:40},{name:"土の光輪",need:40}];
   return [{name:e+"の光輪",need:80}];
-}
+};
 
-// 黄龍 / 黒麒麟
-function get140Anima(c){
-  const g1=[2,5,7,9,10];
-  return g1.includes(c.no)
+const get140Anima = c=>{
+  return [2,5,7,9,10].includes(c.no)
     ? {name:"黄龍のマグナアニマ",need:30}
     : {name:"黒麒麟のマグナアニマ",need:30};
-}
+};
 
-// 属性素材
-function getElementMats(c){
-  const map={
-    "火":[{name:"シヴァのマグナアニマ",need:20},{name:"ウィルナスの竜珠",need:30},{name:"イグニスブライト",need:20}],
-    "水":[{name:"エウロペのマグナアニマ",need:20},{name:"ワムデュスの竜珠",need:30},{name:"アクアブライト",need:20}],
-    "風":[{name:"グリームニルのマグナアニマ",need:20},{name:"イーウィヤの鱗",need:30},{name:"ウェントスブライト",need:20}],
-    "土":[{name:"ゴブロのマグナアニマ",need:20},{name:"ガレオンの竜珠",need:30},{name:"テラブライト",need:20}],
-    "光":[{name:"メタトロンのマグナアニマ",need:20},{name:"ルオーの竜珠",need:30},{name:"イグニスブライト",need:15},{name:"ウェントスブライト",need:15}],
-    "闇":[{name:"アバターのマグナアニマ",need:20},{name:"フェディエルの竜珠",need:30},{name:"アクアブライト",need:15},{name:"テラブライト",need:15}]
-  };
-  return map[c.e];
-}
+const getMagna = e=>{
+  return {
+    "火":[{name:"シヴァのマグナアニマ",need:50}],
+    "水":[{name:"エウロペのマグナアニマ",need:50}],
+    "風":[{name:"グリームニルのマグナアニマ",need:50}],
+    "土":[{name:"ゴブロのマグナアニマ",need:50}],
+    "光":[{name:"メタトロンのマグナアニマ",need:50}],
+    "闇":[{name:"アバターのマグナアニマ",need:50}]
+  }[e] || [];
+};
 
-// 素材
+const getElementMats = c=>{
+  return {
+    "火":[{name:"ウィルナスの竜珠",need:300},{name:"イグニスブライト",need:30}],
+    "水":[{name:"ワムデュスの竜珠",need:300},{name:"アクアブライト",need:30}],
+    "風":[{name:"イーウィヤの竜珠",need:300},{name:"ウェントスブライト",need:30}],
+    "土":[{name:"ガレオンの竜珠",need:300},{name:"テラブライト",need:30}],
+    "光":[{name:"ルオーの竜珠",need:300},{name:"イグニスブライト",need:15},{name:"ウェントスブライト",need:15}],
+    "闇":[{name:"フェディエルの竜珠",need:300},{name:"アクアブライト",need:15},{name:"テラブライト",need:15}]
+  }[c.e];
+};
+
+const getSilverFragment = c=>[{name:`${c.w}の銀片`,need:200}];
+
+const getElementSpecial = c=>{
+  return {
+    "火":[{name:"イグナイトラブル",need:50}],
+    "水":[{name:"アビサルトラジェディ",need:50}],
+    "土":[{name:"インシュラーコア",need:50}],
+    "風":[{name:"ゲイルロック",need:50}],
+    "光":[{name:"靂輪",need:50}],
+    "闇":[{name:"トーデストリープ",need:50}]
+  }[c.e] || [];
+};
+
+// ===== ステージ =====
 function stages(c){
 return [
 {stage:110,materials:[
 {name:"ヒヒイロカネ",need:1},
-{name:"銀の依代の欠片",need:200},
-...(getRings(c.e) || []),
+...getSilverFragment(c),
+...getRings(c.e),
+...getElementSpecial(c),
 {name:"星晶の欠片",need:7500},
 {name:c.e+"の宝珠",need:7500},
 {name:c.e+"ジーン",need:7500},
-{name:"朽ち果てた"+c.w,need:3},
+{name:"朽ち果てた"+c.w,need:200},
 {name:"ルピ",need:100000}
 ]},
 {stage:120,materials:[
-{name:"マグナアニマ",need:50},
+...getMagna(c.e),
+...getElementSpecial(c),
 {name:c.e+"のプシュケー",need:300},
 {name:"バハムートの紫電角",need:100},
-{name:"番天星の欠片",need:50},
+{name:`${c.no}番天星の欠片`,need:50},
 {name:"究意の証",need:100},
 {name:"蒼天の魂",need:1},
 {name:"ルピ",need:5000000}
@@ -117,10 +139,10 @@ return [
 {name:"碧麗の証",need:1}
 ]},
 {stage:140,materials:[
-...(get140Anima(c) ? [get140Anima(c)] : []),
-{name:c.e+"エレメント",need:2000},
-{name:(c.w || "")+"エレメント",need:2000},
-...(getElementMats(c) || []),
+get140Anima(c),
+{name:c.e+"属性エレメント",need:2000},
+{name:c.w+"エレメント",need:2000},
+...getElementMats(c),
 {name:"真龍の金鱗",need:50},
 {name:"ルピ",need:5000000}
 ]},
@@ -133,45 +155,28 @@ return [
 ];
 }
 
-// 状態
+// ===== 状態 =====
 let state = JSON.parse(localStorage.getItem("gbf")) || {};
+state.have ||= {};
+state.levelOpen ||= {};
 
-state.have = state.have || {};
-state.open = state.open || {};
-state.levelOpen = state.levelOpen || {};
+// ===== 色 =====
+const color = p=> p<50?"#e53935":p<80?"#fb8c00":"#43a047";
 
-// 色
-function color(p){
-  if(p<50) return "#e53935";
-  if(p<80) return "#fb8c00";
-  return "#43a047";
-}
-
-// 初期化
+// ===== 初期化 =====
 function init(){
   const sel=document.getElementById("chara");
+  CHARAS.forEach(c=> sel.innerHTML+=`<option>${c.n}</option>`);
 
   CHARAS.forEach(c=>{
-    sel.innerHTML+=`<option value="${c.n}">${c.n}</option>`;
-  });
-
-  sel.value = CHARAS[0].n;
-
-  // レベル開閉の初期化
-  [110,120,130,140,150].forEach(lv=>{
-    if(state.levelOpen[lv] === undefined){
-      state.levelOpen[lv] = true;
-    }
+    [110,120,130,140,150].forEach(lv=>{
+      const key = c.n+"_"+lv;
+      if(state.levelOpen[key]===undefined) state.levelOpen[key]=true;
+    });
   });
 }
 
-// 開閉
-function toggleLevel(lv){
-  state.levelOpen[lv] = !state.levelOpen[lv];
-  render();
-}
-
-// 描画
+// ===== 描画 =====
 function render(){
   const app=document.getElementById("app");
   app.innerHTML="";
@@ -179,39 +184,32 @@ function render(){
   const all=document.getElementById("allView").checked;
   const selected=document.getElementById("chara").value;
 
-  let targets = all
-    ? CHARAS
-    : [CHARAS.find(x=>x.n===selected) || CHARAS[0]];
+  const targets = all ? CHARAS : CHARAS.filter(c=>c.n===selected);
 
   targets.forEach(c=>{
     const card=document.createElement("div");
     card.className="card";
 
-    const header=document.createElement("div");
-    header.className="cardHeader";
-    header.innerHTML=`${c.no}. ${c.n}（${c.e}）`;
-    card.appendChild(header);
-
+    card.innerHTML=`<div class="cardHeader">${c.no}. ${c.n}（${c.e}）</div>`;
     const body=document.createElement("div");
     body.className="cardBody";
 
     stages(c).forEach(stage=>{
+      const keyLv = c.n+"_"+stage.stage;
 
-      // ★ レベルヘッダー（開閉）
-      const lvHeader = document.createElement("div");
-      lvHeader.className = "cardHeader";
-      lvHeader.style.marginTop = "8px";
-      lvHeader.innerHTML = `Lv${stage.stage} ${state.levelOpen[stage.stage]?"▼":"▶"}`;
-
-      lvHeader.onclick = () => toggleLevel(stage.stage);
+      const lvHeader=document.createElement("div");
+      lvHeader.className="cardHeader";
+      lvHeader.innerHTML=`Lv${stage.stage} ${state.levelOpen[keyLv]?"▼":"▶"}`;
+      lvHeader.onclick=()=>{
+        state.levelOpen[keyLv]=!state.levelOpen[keyLv];
+        render();
+      };
 
       body.appendChild(lvHeader);
 
-      // 開いているときだけ表示
-      if(state.levelOpen[stage.stage]){
-
+      if(state.levelOpen[keyLv]){
         stage.materials.forEach(mat=>{
-          const key=c.n+"_"+mat.name;
+          const key=c.n+"_"+mat.name.replace(/\s/g,"");
           const have=state.have[key]||0;
           const lack=Math.max(0,mat.need-have);
           const p=Math.min(100,Math.floor(have/mat.need*100));
@@ -222,19 +220,20 @@ function render(){
           row.innerHTML=`
             <div>${mat.need}</div>
             <div>${mat.name}<br>
-              <input type="number" value="${have}" oninput="update('${key}',this.value)">
+              <input type="number" value="${have}"
+              onchange="update('${key}',this.value)"
+              onwheel="this.blur()">
               <div class="barWrap">
-                <div class="bar" style="width:${p}%;background:${color(p)}">${p}%</div>
+                <div class="bar" style="width:${p}%;background:${color(p)}">
+                ${have}/${mat.need}
+                </div>
               </div>
             </div>
             <div class="${lack>0?'lack':''}">${lack}</div>
           `;
-
           body.appendChild(row);
         });
-
       }
-
     });
 
     card.appendChild(body);
@@ -244,59 +243,53 @@ function render(){
   renderTotal();
   localStorage.setItem("gbf",JSON.stringify(state));
 }
-// 更新
-function update(k,v){
+
+// ===== 更新 =====
+window.update=(k,v)=>{
   state.have[k]=Math.max(0,Number(v)||0);
   render();
-}
+};
 
-// 合算
-function calcAll(){
-  const t={};
+// ===== 合算 =====
+function renderTotal(){
+  const total={}, ranking=[];
+
   CHARAS.forEach(c=>{
     stages(c).forEach(s=>{
       s.materials.forEach(m=>{
-        if(!t[m.name]) t[m.name]={need:0,have:0};
-        t[m.name].need+=m.need;
-        t[m.name].have+=state.have[c.n+"_"+m.name]||0;
+        const key=c.n+"_"+m.name.replace(/\s/g,"");
+        total[m.name] ||= {need:0,have:0};
+        total[m.name].need+=m.need;
+        total[m.name].have+=state.have[key]||0;
       });
     });
   });
-  return t;
-}
 
-// 合算表示
-function renderTotal(){
-  const t=calcAll();
+  const list=document.getElementById("totalList");
+  const rank=document.getElementById("ranking");
+  list.innerHTML="";
+  rank.innerHTML="";
 
-  const totalList=document.getElementById("totalList");
-  const ranking=document.getElementById("ranking");
-
-  totalList.innerHTML="";
-  ranking.innerHTML="";
-
-  let arr=[];
-
-  Object.keys(t).forEach(n=>{
-    const lack=Math.max(0,t[n].need-t[n].have);
-    totalList.innerHTML+=`<div>${n}：${t[n].have}/${t[n].need}（不足 ${lack}）</div>`;
-    if(lack>0) arr.push({n,lack});
+  Object.entries(total).forEach(([n,v])=>{
+    const lack=Math.max(0,v.need-v.have);
+    list.innerHTML+=`<div>${n}：${v.have}/${v.need}（不足 ${lack}）</div>`;
+    if(lack>0) ranking.push({n,lack});
   });
 
-  arr.sort((a,b)=>b.lack-a.lack);
-  arr.forEach(x=>ranking.innerHTML+=`<div>${x.n}：不足 ${x.lack}</div>`);
+  ranking.sort((a,b)=>b.lack-a.lack);
+  ranking.forEach(x=> rank.innerHTML+=`<div>${x.n}：不足 ${x.lack}</div>`);
 }
 
-// イベント
+// ===== イベント =====
 document.getElementById("chara").onchange=render;
 document.getElementById("allView").onchange=render;
 
-  // 初期化
-  init();
-  render();
+// ===== 起動 =====
+init();
+render();
+
 });
 </script>
 
 </body>
-
 </html>
