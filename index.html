@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>グラブル素材計算ツール 完全版</title>
+<title>グラブル素材計算ツール</title>
 
 <style>
 body { font-family: sans-serif; margin:0; background:#f5f6f8; }
@@ -27,7 +27,7 @@ input { width:100%; }
 <body>
 
 <div class="header">
-  <div>グラブル素材計算ツール 完全版</div>
+  <div>グラブル素材計算ツール</div>
   <div class="controls">
     <select id="chara"></select>
     <label><input type="checkbox" id="allView"> 全キャラ表示</label>
@@ -123,7 +123,7 @@ return [
 {name:c.e+"の宝珠",need:7500},
 {name:c.e+"ジーン",need:7500},
 {name:"朽ち果てた"+c.w,need:200},
-{name:"ルピ",need:100000}
+{name:"ダマスカス骸晶",need:20},
 ]},
 {stage:120,materials:[
 ...getMagna(c.e),
@@ -132,8 +132,7 @@ return [
 {name:"バハムートの紫電角",need:100},
 {name:`${c.no}番天星の欠片`,need:50},
 {name:"究意の証",need:100},
-{name:"蒼天の魂",need:1},
-{name:"ルピ",need:5000000}
+{name:"蒼天の魂",need:1}
 ]},
 {stage:130,materials:[
 {name:"碧麗の証",need:1}
@@ -143,8 +142,7 @@ get140Anima(c),
 {name:c.e+"属性エレメント",need:2000},
 {name:c.w+"エレメント",need:2000},
 ...getElementMats(c),
-{name:"真龍の金鱗",need:50},
-{name:"ルピ",need:5000000}
+{name:"真龍の金鱗",need:50}
 ]},
 {stage:150,materials:[
 {name:"終末の暗晶",need:30},
